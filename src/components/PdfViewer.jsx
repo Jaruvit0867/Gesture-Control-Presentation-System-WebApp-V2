@@ -1,8 +1,64 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, memo } from 'react';
 import { Upload, ChevronLeft, ChevronRight, FileText, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export function PdfViewer({
+// Separate component for the pointer to isolate re-renders
+const VisualPointer = memo(({ pointer }) => {
+  if (!pointer?.isActive) return null;
+
+  return (
+    <div
+      className="absolute w-6 h-6 bg-rose-500/40 border-2 border-rose-500 rounded-full z-50 pointer-events-none shadow-[0_0_15px_rgba(244,63,94,0.6)]"
+      style={{
+        left: `${pointer.x * 100}%`,
+        top: `${pointer.y * 100}%`,
+        transform: 'translate(-50%, -50%)',
+        // Use transform instead of left/top for better performance if possible, 
+        // but since we're using %, left/top is easier for the container.
+        // Adding will-change to hint at browser optimization.
+        willChange: 'left, top'
+      }}
+    >
+      <div className="absolute inset-0 bg-rose-500 rounded-full animate-ping opacity-20" />
+    </div>
+  );
+});
+
+// Component for the PDF image itself to isolate it from pointer updates
+const SlideArea = memo(({ pageImage, currentPage, slideDirection }) => {
+  return (
+    <AnimatePresence mode="wait">
+      {pageImage && (
+        <motion.div
+          key={currentPage}
+          initial={{
+            opacity: 0,
+            x: slideDirection === 'next' ? 100 : -100
+          }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{
+            opacity: 0,
+            x: slideDirection === 'next' ? -100 : 100
+          }}
+          transition={{
+            type: 'spring',
+            stiffness: 300,
+            damping: 30
+          }}
+          className="absolute inset-0 flex items-center justify-center p-4Pointer"
+        >
+          <img
+            src={pageImage}
+            alt={`Page ${currentPage}`}
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+});
+
+export const PdfViewer = memo(({
   pageImage,
   currentPage,
   totalPages,
@@ -16,7 +72,7 @@ export function PdfViewer({
   isFullscreen,
   onToggleFullscreen,
   pointer,
-}) {
+}) => {
   const fileInputRef = useRef(null);
   const handleDrop = useCallback((e) => {
     e.preventDefault();
@@ -88,19 +144,8 @@ export function PdfViewer({
         onDragOver={handleDragOver}
       >
         <div className="absolute inset-0 p-1">
-          {/* Visual Pointer Overlay */}
-          {pointer?.isActive && (
-            <div
-              className="absolute w-6 h-6 bg-rose-500/40 border-2 border-rose-500 rounded-full z-50 pointer-events-none transition-all duration-75 shadow-[0_0_15px_rgba(244,63,94,0.6)]"
-              style={{
-                left: `${pointer.x * 100}%`,
-                top: `${pointer.y * 100}%`,
-                transform: 'translate(-50%, -50%)'
-              }}
-            >
-              <div className="absolute inset-0 bg-rose-500 rounded-full animate-ping opacity-20" />
-            </div>
-          )}
+          {/* Visual Pointer Overlay - Optimized to re-render independently */}
+          <VisualPointer pointer={pointer} />
 
           {/* Loading state */}
           {isLoading && (
@@ -153,35 +198,12 @@ export function PdfViewer({
             </div>
           )}
 
-          {/* PDF Page display */}
-          <AnimatePresence mode="wait">
-            {pageImage && (
-              <motion.div
-                key={currentPage}
-                initial={{
-                  opacity: 0,
-                  x: slideDirection === 'next' ? 100 : -100
-                }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{
-                  opacity: 0,
-                  x: slideDirection === 'next' ? -100 : 100
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 300,
-                  damping: 30
-                }}
-                className="absolute inset-0 flex items-center justify-center p-4"
-              >
-                <img
-                  src={pageImage}
-                  alt={`Page ${currentPage}`}
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* PDF Page display - Isolated from pointer updates */}
+          <SlideArea
+            pageImage={pageImage}
+            currentPage={currentPage}
+            slideDirection={slideDirection}
+          />
         </div>
       </div>
 
@@ -236,4 +258,4 @@ export function PdfViewer({
       )}
     </div>
   );
-}
+});

@@ -6,12 +6,23 @@ import { GestureCamera } from './components/GestureCamera';
 import { SwipeIndicator } from './components/SwipeIndicator';
 import { useGesture } from './hooks/useGesture';
 import { usePdfViewer } from './hooks/usePdfViewer';
+import { BackgroundParticles } from './components/BackgroundParticles';
 
 function App() {
   const [swipeIndicator, setSwipeIndicator] = useState({ visible: false, direction: null });
   const [slideDirection, setSlideDirection] = useState('next');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const viewerContainerRef = useRef(null);
+
+  // Track mouse for background spotlight effect
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const {
     pageImage,
@@ -127,11 +138,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-dark-950 relative overflow-hidden">
+      {/* Background Particles (Neural Web & Stars) */}
+      <BackgroundParticles />
+
       {/* Background blobs */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="bg-blob animate-blob w-[500px] h-[500px] bg-accent-primary/20 top-[-10%] left-[-10%]" />
-        <div className="bg-blob animate-blob w-[400px] h-[400px] bg-accent-secondary/15 bottom-[-5%] right-[-5%]" style={{ animationDelay: '2s' }} />
-        <div className="bg-blob animate-blob w-[600px] h-[600px] bg-purple-500/10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ animationDelay: '5s' }} />
+        <div className="bg-blob animate-blob w-[500px] h-[500px] bg-accent-primary/5 top-[-10%] left-[-10%]" />
+        <div className="bg-blob animate-blob w-[400px] h-[400px] bg-accent-secondary/5 bottom-[-5%] right-[-5%]" style={{ animationDelay: '2s' }} />
       </div>
 
       <Header />
