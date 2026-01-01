@@ -45,7 +45,7 @@ export function Header() {
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-aurora-cyan animate-pulse shadow-[0_0_10px_rgba(0,245,255,0.8)]" />
               <p className="text-[10px] uppercase tracking-[0.2em] text-aurora-cyan/80 font-bold">
-                AI-Powered Control
+                Presentation Control
               </p>
             </div>
           </div>

@@ -271,7 +271,7 @@ function MainApp() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-aurora-cyan to-aurora-purple flex items-center justify-center"><Presentation className="w-5 h-5 text-white" /></div>
-                <div><p className="font-display font-bold text-white">GesturePresenter</p><p className="text-xs text-slate-500">AI-Powered Control</p></div>
+                <div><p className="font-display font-bold text-white">GesturePresenter</p><p className="text-xs text-slate-500">Presentation Control</p></div>
               </div>
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-3 text-xs text-slate-500">
